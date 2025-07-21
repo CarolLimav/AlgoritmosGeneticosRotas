@@ -1,7 +1,9 @@
 package ag;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -24,29 +26,33 @@ public class Solucao { // Classe que representa uma solução do problema, que �
     public double calcularCustoTotal() {
         double custo = 0;
         for (Rota rota : rotas) {
-            custo += calcularDistanciaRota(rota);
+            custo += rota.calcularDistanciaTotal();
         }
         return custo;
     }
 
     // Calcula a distância total de uma rota somando distâncias entre clientes consecutivos
-    private double calcularDistanciaRota(Rota rota) {
-        double distancia = 0;
-        List<Cliente> clientes = rota.getClientes();
-        Cliente anterior = null;
-
-        for (Cliente atual : clientes) {
-            if (anterior != null) {
-                distancia += calcularDistancia(anterior, atual);
+   
+    public boolean solucaoValida(List<Cliente> todosClientes) {
+        Set<Integer> atendidos = new HashSet<>();
+        for (Rota rota : rotas) {
+            if (rota.excedeCapacidade() || !rota.respeitaJanelasDeTempo()) return false;
+            for (Cliente c : rota.getClientes()) {
+                atendidos.add(c.getId());
             }
-            anterior = atual;
         }
-        return distancia;
+        return atendidos.size() == todosClientes.size();
     }
- // Calcula a distância Euclidiana entre dois clientes (pontos)
-    private double calcularDistancia(Cliente c1, Cliente c2) {
-        double dx = c1.getX() - c2.getX();
-        double dy = c1.getY() - c2.getY();
-        return Math.sqrt(dx * dx + dy * dy);
+
+    
+    public boolean atendeTodosClientes(List<Cliente> clientes) {
+        Set<Integer> atendidos = new HashSet<>();
+        for (Rota rota : rotas) {
+            for (Cliente c : rota.getClientes()) atendidos.add(c.getId());
+        }
+        return atendidos.size() == clientes.size();
     }
+
+    
+    
 }
