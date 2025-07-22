@@ -11,7 +11,7 @@ import lombok.Setter;
 @NoArgsConstructor
 public class Veiculo {
 	 private int id;
-	 private String tipo; // Moto, Carro, Caminhão
-	 private int capacidade; //capacidade maxima de carga (quantidade de pacotes)
-	 private int tempoDisponivel; // tempo total disponível para realizar entregas (horas)
+	 private String tipo; 
+	 private int capacidade; 
+	 private int tempoDisponivel; 
 }

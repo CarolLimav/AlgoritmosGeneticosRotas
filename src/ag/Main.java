@@ -34,7 +34,6 @@ public class Main {
         AlgoritmoGenetico ag = new AlgoritmoGenetico(clientes, veiculos, deposito);
         Solucao melhorSolucao = ag.executar();
 
-        // Exibir resultado
         System.out.println("\n=== Melhor solução encontrada ===");
         if (melhorSolucao != null) {
             if (melhorSolucao.solucaoValida(clientes)) {

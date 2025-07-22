@@ -1,4 +1,3 @@
-// ag/AlgoritmoGenetico.java
 package ag;
 
 import java.util.ArrayList;
@@ -24,7 +23,7 @@ public class AlgoritmoGenetico {
     private Deposito deposito;
 
     private int tamanhoPopulacao = 100;
-    private int geracoes = 300;
+    private int geracoes = 30;
     private double taxaCrossover = 0.8;
     private double taxaMutacao = 0.15;
     private int tamanhoTorneio = 5;
@@ -66,14 +65,9 @@ public class AlgoritmoGenetico {
                 novaPopulacao.add(filho);
             }
             while(novaPopulacao.size() > tamanhoPopulacao) {
-                // Remove o pior elemento se a nova população exceder o tamanho
-                // Isso requer que a lista esteja ordenada ou que se remova o de pior fitness
-                // Para simplificar, vamos apenas remover o último, assumindo que a seleção já priorizou os melhores
                 novaPopulacao.remove(novaPopulacao.size() - 1);
             }
             populacao = novaPopulacao;
-
-            // Imprime o melhor fitness da geração para monitorar o progresso
             System.out.println("Geração " + (geracao + 1) + ", Melhor Custo (Fitness): " + String.format("%.2f", fitness(melhor(populacao))));
         }
         System.out.println("--- Fim da Evolução Genética ---");
@@ -99,7 +93,7 @@ public class AlgoritmoGenetico {
         List<Solucao> populacao = new ArrayList<>();
 
         int tentativas = 0;
-        final int MAX_TENTATIVAS = tamanhoPopulacao * 10; // Aumentado para dar mais chance de gerar soluções válidas inicialmente
+        final int MAX_TENTATIVAS = tamanhoPopulacao * 10; 
 
         while (populacao.size() < tamanhoPopulacao && tentativas < MAX_TENTATIVAS) {
             Solucao solucao = new Solucao();
@@ -114,44 +108,38 @@ public class AlgoritmoGenetico {
                 int capacidadeRestante = veiculo.getCapacidade();
 
                 Iterator<Cliente> iterator = clientesNaoAtendidos.iterator();
-                List<Cliente> clientesParaAdicionar = new ArrayList<>(); // Clientes que serão adicionados nesta rota após validação
+                List<Cliente> clientesParaAdicionar = new ArrayList<>(); 
                 
                 while (iterator.hasNext()) {
                     Cliente cliente = iterator.next();
                     if (capacidadeRestante >= cliente.getDemanda()) {
-                        // Tenta adicionar o cliente para verificar a janela de tempo
-                        rota.getClientes().add(cliente); // Adiciona temporariamente
+                        rota.getClientes().add(cliente); 
                         if (rota.respeitaJanelasDeTempo()) {
-                            clientesParaAdicionar.add(cliente); // Adiciona na lista de clientes válidos para essa rota
+                            clientesParaAdicionar.add(cliente); 
                             capacidadeRestante -= cliente.getDemanda();
-                            iterator.remove(); // Remove da lista de clientes não atendidos
+                            iterator.remove(); 
                         } else {
-                            // Se não respeita, remove o cliente temporário e tenta o próximo
                             rota.getClientes().remove(cliente);
                         }
                     }
                 }
-                // Adiciona os clientes que passaram pela validação de capacidade e tempo
-                rota.getClientes().clear(); // Limpa clientes temporários
-                rota.getClientes().addAll(clientesParaAdicionar); // Adiciona os válidos
+                rota.getClientes().clear(); 
+                rota.getClientes().addAll(clientesParaAdicionar); 
 
                 if (!rota.getClientes().isEmpty()) {
                     solucao.adicionarRota(rota);
                 }
             }
             
-            // Só adiciona à população se todos os clientes foram atendidos e a solução é válida inicialmente
             if (clientesNaoAtendidos.isEmpty() && solucao.solucaoValida(clientes)) {
                 populacao.add(solucao);
             }
             tentativas++;
         }
 
-        // Se, após as tentativas, a população ainda não estiver cheia de soluções válidas,
-        // preencha o restante gerando soluções aleatórias (que podem ser inválidas, mas serão penalizadas)
         while (populacao.size() < tamanhoPopulacao) {
             Solucao solucaoInvalida = new Solucao();
-            List<Cliente> clientesRestantes = new ArrayList<>(clientes); // Reinicia com todos os clientes
+            List<Cliente> clientesRestantes = new ArrayList<>(clientes); 
             Collections.shuffle(clientesRestantes);
 
             List<Veiculo> veiculosDisponiveisParaGeracao = new ArrayList<>(veiculos);
@@ -165,7 +153,6 @@ public class AlgoritmoGenetico {
                 while (iterator.hasNext()) {
                     Cliente cliente = iterator.next();
                     if (capacidadeRestante >= cliente.getDemanda()) {
-                        // Não faz validação de janela de tempo aqui para garantir que algo seja gerado
                         rota.adicionarCliente(cliente);
                         capacidadeRestante -= cliente.getDemanda();
                         iterator.remove();
@@ -223,11 +210,9 @@ public class AlgoritmoGenetico {
 
             List<Cliente> clientesRotaAtual = new ArrayList<>();
             while (indiceCliente < clientesFilho.size() &&
-                   capacidadeRestante >= clientesFilho.get(indiceCliente).getDemanda()) {
-                
-                // Tenta adicionar o cliente para verificar janelas de tempo
+                capacidadeRestante >= clientesFilho.get(indiceCliente).getDemanda()) {
                 clientesRotaAtual.add(clientesFilho.get(indiceCliente));
-                // Cria uma rota temporária para testar as janelas de tempo
+             
                 Rota rotaTemp = new Rota(veiculo, deposito);
                 rotaTemp.getClientes().addAll(clientesRotaAtual);
 
@@ -236,10 +221,8 @@ public class AlgoritmoGenetico {
                     capacidadeRestante -= clientesFilho.get(indiceCliente).getDemanda();
                     indiceCliente++;
                 } else {
-                    // Se a adição deste cliente quebra as janelas de tempo, não o adiciona
-                    clientesRotaAtual.remove(clientesRotaAtual.size() - 1); // Remove do temp
-                    // Avança para o próximo cliente na lista geral para não ficar preso
-                    indiceCliente++; // Avança o índice, mas não adiciona este cliente a esta rota
+                    clientesRotaAtual.remove(clientesRotaAtual.size() - 1); 
+                    indiceCliente++; 
                 }
             }
             if (!rota.getClientes().isEmpty()) {
@@ -253,28 +236,24 @@ public class AlgoritmoGenetico {
         List<Rota> rotas = solucao.getRotas();
         if (rotas.isEmpty()) return;
 
-        // Se houver apenas uma rota, tenta mutação intra-rota (swap)
         if (rotas.size() == 1) {
             Rota r = rotas.get(0);
-            if (r.getClientes().size() < 2) return; // Precisa de pelo menos 2 clientes para swap
+            if (r.getClientes().size() < 2) return; 
 
             int i1 = random.nextInt(r.getClientes().size());
             int i2;
             do {
                 i2 = random.nextInt(r.getClientes().size());
             } while (i2 == i1);
-
-            // Testar se a troca não quebra as janelas de tempo (complexo, mas importante)
-            // Por simplicidade aqui, fazemos a troca e a penalidade no fitness cuida.
+            
             Collections.swap(r.getClientes(), i1, i2);
             return;
         }
 
-        // Caso contrário (duas ou mais rotas), decide entre intra-rota e inter-rota
-        if (random.nextDouble() < 0.7) { // 70% de chance de mutação intra-rota
+        if (random.nextDouble() < 0.7) { 
             int idxRota = random.nextInt(rotas.size());
             Rota r = rotas.get(idxRota);
-            if (r.getClientes().size() < 2) return; // Não há o que mutar se só tem 0 ou 1 cliente
+            if (r.getClientes().size() < 2) return; 
 
             int i1 = random.nextInt(r.getClientes().size());
             int i2;
@@ -284,7 +263,7 @@ public class AlgoritmoGenetico {
 
             Collections.swap(r.getClientes(), i1, i2);
 
-        } else { // 30% de chance de mutação inter-rota (troca entre rotas)
+        } else { 
             int idx1 = random.nextInt(rotas.size());
             int idx2;
             do {
@@ -302,30 +281,11 @@ public class AlgoritmoGenetico {
             Cliente c1 = r1.getClientes().get(i1);
             Cliente c2 = r2.getClientes().get(i2);
 
-            // Verificar se a troca é viável em termos de capacidade
             int demandaR1AposTroca = r1.calcularDemandaTotal() - c1.getDemanda() + c2.getDemanda();
             int demandaR2AposTroca = r2.calcularDemandaTotal() - c2.getDemanda() + c1.getDemanda();
 
-            // Adicionalmente, verificar se a troca não viola as janelas de tempo
-            // Esta é uma verificação mais complexa, pois envolve o novo cliente na rota.
-            // Para ser exato, precisaríamos criar rotas temporárias e testar.
-            // Por simplicidade, assumimos que o fitness penalizará depois.
-            
             if (demandaR1AposTroca <= r1.getVeiculo().getCapacidade() &&
                 demandaR2AposTroca <= r2.getVeiculo().getCapacidade()) {
-                
-                // Realiza a troca e verifica as janelas de tempo
-                // Cuidado: Esta é uma operação in-place, pode ser arriscado se não clonar.
-                // Uma forma mais segura seria:
-                // List<Cliente> tempClientes1 = new ArrayList<>(r1.getClientes());
-                // tempClientes1.set(i1, c2);
-                // Rota tempRota1 = new Rota(r1.getVeiculo(), r1.getDeposito());
-                // tempRota1.getClientes().addAll(tempClientes1);
-
-                // ... e fazer o mesmo para r2. Depois, se ambos forem válidos, aplicar a mudança.
-                
-                // Para manter a simplicidade do seu código original, vamos aplicar a troca
-                // e deixar a função fitness cuidar das penalidades se as janelas forem violadas.
                 r1.getClientes().set(i1, c2);
                 r2.getClientes().set(i2, c1);
             }
@@ -350,8 +310,6 @@ public class AlgoritmoGenetico {
                 custo += 5000 * (rota.calcularDemandaTotal() - rota.getVeiculo().getCapacidade());
             }
             if (!rota.respeitaJanelasDeTempo()) {
-                // Penalidade por violação da janela de tempo pode ser proporcional ao atraso
-                // ou um valor fixo se o objetivo é apenas respeitar ou não.
                 custo += 2000;
             }
         }
@@ -384,7 +342,4 @@ public class AlgoritmoGenetico {
         return nova;
     }
 
-    public double fitnessSemPenalidade(Solucao solucao) {
-        return solucao.calcularCustoTotal();
-    }
 }
